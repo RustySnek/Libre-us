@@ -1,42 +1,53 @@
 import axios from "axios";
-import { Text, View, ScrollView } from "react-native";
+import { Text, View } from "react-native";
 import { useAuth } from "../../shared/auth_context";
 import { useEffect, useState } from "react";
 import LoadingScreen from "../../shared/loading";
 import { PieChart } from "react-native-svg-charts";
-import { RefreshControl, TouchableOpacity } from "react-native-gesture-handler";
+import { RefreshControl, TouchableOpacity, ScrollView } from "react-native-gesture-handler";
 
-const colorMapping = {
-  "1": "#FF5733",
-  "1+": "#FF5733",
-  "2-": "#33aaff",
-  "2": "#33aaff",
-  "2+": "#33aaff",
-  "3-": "#33ff33",
-  "3": "#33ff33",
-  "3+": "#33ff33",
-  "4-": "#ff33aa",
-  "4": "#ff33aa",
-  "4+": "#ff33aa",
-  "5-": "#3333ff",
-  "5": "#3333ff",
-  "5+": "#3333ff",
-  "6-": "#FFFFFF",
-  "6": "#FFFFFF",
+export const colorMapping = {
+  '1': '#D32F2F',  // Dark Red
+  '1-': '#EF5350', // Lighter Red
+  '1+': '#B71C1C', // Darker Red
+
+  '2': '#FF9800',  // Dark Orange
+  '2-': '#FFB74D', // Lighter Orange
+  '2+': '#F57C00', // Darker Orange
+
+  '3': '#FFEB3B',  // Dark Yellow
+  '3-': '#FFEE58', // Lighter Yellow
+  '3+': '#FDD835', // Darker Yellow
+
+  '4': '#4CAF50',  // Dark Green
+  '4-': '#66BB6A', // Lighter Green
+  '4+': '#43A047', // Darker Green
+
+  '5': '#2196F3',  // Dark Blue
+  '5-': '#42A5F5', // Lighter Blue
+  '5+': '#1E88E5', // Darker Blue
+
+  '6': '#9C27B0',  // Dark Purple
+  '6-': '#AB47BC', // Lighter Purple
+  '6+': '#8E24AA', // Darker Purple};
+
 };
 
 const PieChartComponent = ({ data, avg }) => {
-  const pieData = data
-    .map((value, index) => ({
-      value,
-      svg: {
-        fill: colorMapping[value],
-        onPress: () => console.log('press', value),
-      },
-      arc: { outerRadius: (90) + '%', innerRadius: "80%", padAngle: 0 },
+  const pieData = data.flat().filter(grade => grade.counts === true)
+    .map((value, index) => {
+      console.log(value.value)
+      return ({
+        value: value.value,
+        svg: {
+          fill: colorMapping[value.grade],
+          onPress: () => console.log('press', value),
+        },
+        arc: { outerRadius: (90) + '%', innerRadius: "80%", padAngle: 0 },
 
-      key: `pie-${index}`,
-    }))
+        key: `pie-${index}`,
+      })
+    })
 
   return (
     <View style={{ height: 250 }} className="flex justify-center">
@@ -53,7 +64,6 @@ const SubjectScreen = ({ navigation }) => {
   const [semester_average, set_semester_average] = useState(0.00);
   const api_url = process.env.API_URL;
   const { is_loading, stop_loading, start_loading, authenticate, logout } = useAuth();
-
 
   const Subject = ({ name, gpa, grades }) => {
 
@@ -75,20 +85,14 @@ const SubjectScreen = ({ navigation }) => {
   }
 
   const parse_subjects = (school_subjects, semester_avgs, semester) => {
-    const all_grades = [];
     const all_grade_values = [];
     const semester_subjects = [];
     for (const [subject, grades] of Object.entries(school_subjects[semester])) {
-      all_grades.push(grades
-        .filter(grade => grade.counts === true)
-        .map(grade => grade.grade)
-      )
       all_grade_values.push(grades
         .filter(grade => grade.counts === true).map(grade => grade.value))
       semester_subjects.push(<Subject key={subject} name={subject} gpa={semester_avgs[subject]} grades={grades} />)
     }
-    set_pie(all_grades.flat());
-
+    set_pie(Object.values(school_subjects[semester]));
     set_semester_average(parseFloat((all_grade_values.flat().reduce((acc, num) => acc + num, 0) / all_grade_values.flat().length).toFixed(2)));
     set_subjects(semester_subjects)
   }
