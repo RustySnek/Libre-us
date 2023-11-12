@@ -1,13 +1,13 @@
-import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
-import LoginNavigator from './navigators/main_navigator';
+import { AuthProvider } from './shared/auth_context';
+import AuthFlow from './navigators/auth_flow';
 
 export default function App() {
   return (
     <NavigationContainer>
-      <LoginNavigator />
-
+      <AuthProvider>
+        <AuthFlow />
+      </AuthProvider>
     </NavigationContainer>
   );
 }
