@@ -24,8 +24,29 @@ export const AuthProvider = ({ children }) => {
   const stop_loading = () => {
     set_loading(false);
   };
+  const authenticate = async () => {
+
+    start_loading();
+    try {
+      const token = await SecureStore.getItemAsync("api_key");
+
+      if (typeof token === "string") {
+        login();
+        return token; // Return the token
+      } else {
+        logout();
+        return null; // Return null if no token
+      }
+    } catch (err) {
+      console.error(err);
+      logout();
+      throw err; // Re-throw the error
+    } finally {
+      stop_loading();
+    }
+  }
   return (
-    <AuthContext.Provider value={{ is_logged_in, login, logout, is_loading, start_loading, stop_loading }}>
+    <AuthContext.Provider value={{ is_logged_in, login, logout, is_loading, start_loading, stop_loading, authenticate }}>
       {children}
     </AuthContext.Provider>
   );

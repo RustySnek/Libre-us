@@ -5,22 +5,11 @@ import HomeNavigator from "./home_navigator";
 import { useEffect } from "react";
 
 export default function AuthFlow() {
-  const { is_logged_in, login, logout, start_loading, stop_loading } = useAuth();
+  const { is_logged_in, authenticate, is_loading } = useAuth();
   useEffect(() => {
-    start_loading();
-    SecureStore.getItemAsync("api_key").then((token) => {
-      if (typeof token == "string") {
-        login()
-      } else {
-        logout()
-      }
-    }).catch((err) => {
-      console.error(err)
-      logout()
-    }).finally(() => {
-
-      stop_loading();
-    });
+    (async () => {
+      await authenticate()
+    })()
 
   }, [])
   return is_logged_in == true ? <HomeNavigator /> : <LoginNavigator />
