@@ -1,17 +1,21 @@
 import { View, Text, TextInput } from "react-native";
 import axios from 'axios';
-import React, { createContext, useContext, useState } from 'react';
-import { TouchableOpacity } from "react-native-gesture-handler";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Switch, TouchableOpacity } from "react-native-gesture-handler";
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from "../shared/auth_context";
 import LoadingScreen from "../shared/loading";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const api_url = process.env.API_URL;
 
 const LoginScreen = () => {
+  const [remember_user, set_remember_user] = useState(false);
   const [password, set_password] = useState("");
   const [error_message, set_error_message] = useState("");
   const [username, set_username] = useState("");
   const { login, is_loading, start_loading, stop_loading } = useAuth()
+
   const get_token = async (username, password) => {
     axios.post(`${api_url}/login`, { username, password })
       .then(response => {
@@ -27,8 +31,28 @@ const LoginScreen = () => {
         }
       });
   };
+  const change_username = async (value) => {
+    set_username(value)
+    if (remember_user === true) {
+      await AsyncStorage.setItem("username", value)
+    }
+  }
+  const toggle_remember_user = async (value) => {
+    set_remember_user(value)
+    await AsyncStorage.setItem("remember_user", JSON.stringify(value))
+  }
 
-
+  useEffect(() => {
+    AsyncStorage.getItem("remember_user").then(async (value) => {
+      set_remember_user(JSON.parse(value))
+      if (JSON.parse(value) === true) {
+        user = await AsyncStorage.getItem("username")
+        set_username(user)
+      }
+    }).catch(async () => {
+      await AsyncStorage.setItem("remember_user", remember_user)
+    })
+  }, [])
 
   const sign_in = () => {
     start_loading();
@@ -44,13 +68,19 @@ const LoginScreen = () => {
       <View className="mt-24 mx-8 ">
         <Text className="font-normal text-5xl text-white italic">Welcome</Text>
         <View className="space-y-16 mt-16">
-          <TextInput
-            blurOnSubmit={true}
-            onChangeText={text => set_username(text)}
-            className="text-white text-xl border-b border-b-zinc-600 pb-4 w-80"
-            selectTextOnFocus
-            placeholder="Username" placeholderTextColor="gray" />
-
+          <View>
+            <TextInput
+              blurOnSubmit={true}
+              value={username}
+              onChangeText={text => change_username(text)}
+              className="text-white text-xl border-b border-b-zinc-600 pb-4 w-80"
+              selectTextOnFocus
+              placeholder="Username" placeholderTextColor="gray" />
+            <View className='flex flex-row items-center justify-end'>
+              <Text className="text-white">Remember</Text>
+              <Switch trackColor={{ true: "#e91e63", false: "#880e4f" }} thumbColor="#d81b60" value={remember_user} onValueChange={(value) => toggle_remember_user(value)} />
+            </View>
+          </View>
           <TextInput blurOnSubmit={true}
             onChangeText={text => set_password(text)}
             className="text-white text-xl border-b border-b-zinc-600 pb-4 w-80"
