@@ -4,6 +4,12 @@ import * as SecureStore from "expo-secure-store";
 
 const AuthContext = createContext();
 
+export const basic_headers = {
+  Accept: "application/json",
+  "Content-Type": "application/json",
+};
+
+
 export const AuthProvider = ({ children }) => {
   const [is_logged_in, set_logged_in] = useState(false);
   const [is_loading, set_loading] = useState(false);
@@ -14,8 +20,10 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     SecureStore.deleteItemAsync("api_key").then(() => {
       console.log("Removed the token")
+    }).finally(() => {
+
+      set_logged_in(false);
     })
-    set_logged_in(false);
   };
   const start_loading = () => {
     set_loading(true);
@@ -29,7 +37,6 @@ export const AuthProvider = ({ children }) => {
     start_loading();
     try {
       const token = await SecureStore.getItemAsync("api_key");
-
       if (typeof token === "string") {
         login();
         return token; // Return the token

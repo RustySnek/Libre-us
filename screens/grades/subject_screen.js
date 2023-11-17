@@ -36,7 +36,6 @@ export const colorMapping = {
 const PieChartComponent = ({ data, avg }) => {
   const pieData = data.flat().filter(grade => grade.counts === true)
     .map((value, index) => {
-      console.log(value.value)
       return ({
         value: value.value,
         svg: {
@@ -59,12 +58,11 @@ const PieChartComponent = ({ data, avg }) => {
 
 const SubjectScreen = ({ navigation }) => {
   const [subjects, set_subjects] = useState([]);
-  const [refreshing, set_refreshing] = useState(false);
+  const [refreshing, set_refreshing] = useState(true);
   const [pie_grades, set_pie] = useState([]);
   const [semester_average, set_semester_average] = useState(0.00);
   const api_url = process.env.API_URL;
   const { is_loading, stop_loading, start_loading, authenticate, logout } = useAuth();
-
   const Subject = ({ name, gpa, grades }) => {
 
     const gpa_color = colorMapping[Math.round(gpa[2].gpa).toString()]
@@ -109,17 +107,19 @@ const SubjectScreen = ({ navigation }) => {
       parse_subjects(response.data["Grades"], response.data["Gpa"], 0)
     }).catch((err) => {
       console.error(err.response.data)
-      logout()
+      logout();
     }).finally(() => {
       stop_loading()
     })
   }
   useEffect(() => {
-    authenticate().then((token) => {
+    if (refreshing === true) {
+      authenticate().then((token) => {
+        get_grades(token, "all")
+      })
+      set_refreshing(false);
 
-      get_grades(token, "all")
-    })
-    set_refreshing(false);
+    }
   }, [refreshing])
   return (
     <View className="bg-[#121212] flex-1">

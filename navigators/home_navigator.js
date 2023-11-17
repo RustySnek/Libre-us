@@ -1,14 +1,31 @@
-import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import SubjectNavigator from './subject_navigator';
+import OverviewNavigator from "./overview_navigator";
 
-import SubjectScreen from '../screens/grades/subject_screen';
-import ViewSubject from '../screens/grades/view_subject';
+const Drawer = createDrawerNavigator();
 
-const stack = createStackNavigator();
-function HomeNavigator() {
-  return (<stack.Navigator>
-    <stack.Screen name="Subjects" component={SubjectScreen} options={{ headerShown: false }} />
-    <stack.Screen name="ViewSubject" component={ViewSubject} options={{ headerShown: false }} />
-  </stack.Navigator>);
-}
+const HomeNavigator = () => {
+  return (
+    <Drawer.Navigator screenOptions={{
+      drawerStyle: {
+        backgroundColor: "#121212",
+      },
+      drawerLabelStyle: {
+        color: "white"
+      },
+      headerStyle: {
+        backgroundColor: "#121212"
+      },
+      headerTitleStyle: {
+        color: "white"
+      },
+      headerTintColor: "white"
+    }}>
 
+      <Drawer.Screen name="Overview" component={OverviewNavigator} />
+      <Drawer.Screen name="Subjects" component={SubjectNavigator} />
+    </Drawer.Navigator>
+  );
+};
 export default HomeNavigator;
