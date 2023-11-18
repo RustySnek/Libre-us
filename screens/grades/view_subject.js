@@ -8,13 +8,11 @@ import { Grade } from "../../shared/shared_components";
 const ViewSubject = ({ route }) => {
   const { subject, grades } = route.params;
   const [subject_grades, set_grades] = useState([]);
-  console.log(grades)
 
   useEffect(() => {
     set_grades([grades.map((grade, idx) => {
       return <Grade grade={grade} key={idx} />
     })])
-    console.log(subject_grades)
   }, [])
 
   return (

@@ -19,7 +19,7 @@ export const Attendance = ({ attendance }) => {
         </View>
         <View className="flex-1 flex-row px-4 justify-between">
           <View className="flex-row flex justify-between self-center py-1">
-            <Text numberOfLines={2} className="text-white truncate w-[90%]">{attendance.subject}</Text>
+            <Text numberOfLines={2} className="text-white truncate w-[85%]">{attendance.subject}</Text>
           </View>
           <View className="flex flex-row items-center justify-between">
             <View className="flex-row flex space-x-2 items-center">

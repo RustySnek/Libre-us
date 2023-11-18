@@ -27,7 +27,7 @@ export const OverviewProvider = ({ children }) => {
   const load_data = async () => {
     try {
       const value = await AsyncStorage.getItem("overview");
-      if (JSON.parse(value) != null) {
+      if (JSON.parse(value) !== null) {
         set_overview_data(JSON.parse(value));
       }
     } catch (error) {
@@ -49,15 +49,12 @@ export const OverviewProvider = ({ children }) => {
 
   };
   useEffect(() => {
-    (async () => {
-      await load_data();
-    })()
+    const load = async () => {
+      await load_data()
+    }
+    load()
   }, []);
-  useEffect(() => {
-    (async () => {
-      await store_data();
-    })()
-  }, [overview_data]); return (
+  return (
     <OverviewContext.Provider value={{ overview_data, add_overview_item, store_data, load_data, wipe_data }}>
       {children}
     </OverviewContext.Provider>

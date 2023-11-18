@@ -9,10 +9,10 @@ import { Announcement, Attendance, Grade, Message } from "../../shared/shared_co
 const Overview = () => {
 
   const [refreshing, set_refreshing] = useState(true);
-  const [subjects, set_subjects] = useState([]);
+  const [loaded, set_loaded] = useState(false);
   const [overview, set_overview] = useState([]);
   const { is_loading, stop_loading, start_loading, authenticate, logout } = useAuth();
-  const { add_overview_item, store_data, load_data, overview_data, wipe_data, } = useOverview();
+  const { add_overview_item, store_data, load_data, overview_data, wipe_data } = useOverview();
 
 
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -21,9 +21,9 @@ const Overview = () => {
     let last_date = "";
     Object.entries(overview_data).forEach(([key, val], idx) => {
       if (last_date != val.date) {
-        overview_components.push((<Text className='text-white mt-4 border-b border-white p-1 pl-4 w-full'>{val.date} {weekdays[new Date(val.date).getDay()]}</Text>))
+        overview_components.push((<Text key={`date-marker-${idx}`} className='text-white mt-4 border-b border-white p-1 pl-4 w-full'>{val.date} {weekdays[new Date(val.date).getDay()]}</Text>))
 
-        last_date = val.date
+        last_date = val.date.split(" ")[0]
       }
       const _type = key.split("-")[0]
       switch (_type) {
@@ -46,10 +46,10 @@ const Overview = () => {
   }
 
   const parse_overview_data = async (data) => {
-    console.log(Object.keys(data))
+
     const overview = [];
     const all_grades = Object.values(data["Grades"]["1"]).flat()
-    const all_attendance = data["Attendance"]["1"]
+    const all_attendance = data["Attendance"][0]
     const all_messages = data["Messages"]
     const all_announcements = data["Announcements"]
     all_grades.forEach(async (grade, _) => {
@@ -82,9 +82,11 @@ const Overview = () => {
     for (const [key, val] of sorted_overview) {
       await add_overview_item(key, val);
     }
+    set_loaded(true);
   }
 
   const get_overview = async (token, date, time) => {
+
     const url = process.env.API_URL + "overview";
     const headers = {
       ...basic_headers,
@@ -99,26 +101,45 @@ const Overview = () => {
       headers,
       body: JSON.stringify(overview_data),
     }).then(async (response) => {
-      const data = await response.json();
-      parse_overview_data(data);
+      if (response.status === 401) {
+        stop_loading()
+        logout()
+      } else {
+        const data = await response.json();
+        parse_overview_data(data);
+
+      }
     }).catch((error) => {
       console.error(error)
+      logout()
     });
   }
+  useEffect(() => {
+    const store = async () => {
 
+      await store_data();
+
+    }
+    store()
+  }, [overview_data]);
+  useEffect(() => {
+    if (loaded === true) {
+      stop_loading()
+      data_to_components()
+      set_loaded(false);
+    }
+  }, [loaded])
   useEffect(() => {
     async function refresh() {
       const token = await authenticate()
+      start_loading()
+      set_refreshing(true);
       await load_data()
-      await get_overview(token, "2023-10-01", "00:00:00")
 
-      //await get_grades()
-
-      await store_data()
-
-      data_to_components()
+      await get_overview(token, "2023-11-01", "00:00:00")
       set_refreshing(false);
 
+      await wipe_data()
     }
     if (refreshing === true) {
       refresh()
