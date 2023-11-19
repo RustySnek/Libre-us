@@ -1,19 +1,18 @@
 import { useEffect, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
 import LoadingScreen from "../../shared/loading";
 import { useAuth, basic_headers } from "../../shared/auth_context";
 import { RefreshControl, ScrollView } from "react-native-gesture-handler";
 import { useOverview } from "../../shared/overview_context";
 import { Announcement, Attendance, Grade, Message } from "../../shared/shared_components";
-const Overview = () => {
+const Overview = ({ navigation }) => {
 
   const [refreshing, set_refreshing] = useState(true);
   const [loaded, set_loaded] = useState(false);
   const [overview, set_overview] = useState([]);
   const { is_loading, stop_loading, start_loading, authenticate, logout } = useAuth();
   const { add_overview_item, store_data, load_data, overview_data, wipe_data } = useOverview();
-
 
   const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const data_to_components = () => {
@@ -35,7 +34,11 @@ const Overview = () => {
           overview_components.push(<Attendance attendance={val} key={idx} />)
           break;
         case "message":
-          overview_components.push(<Message message={val} key={idx} />)
+          overview_components.push((
+            <TouchableOpacity key={`overview-message-${key}`} onPress={() => navigation.navigate("overview_message", { message: val })}>
+              <Message message={val} key={idx} />
+            </TouchableOpacity>
+          ))
           break;
         case "announcement":
           overview_components.push(<Announcement announcement={val} key={idx} />)
@@ -111,22 +114,37 @@ const Overview = () => {
       }
     }).catch((error) => {
       console.error(error)
-      logout()
+      console.log("offline mode")
+      set_loaded(true);
     });
   }
+  const wipe_and_clear = async () => {
+    await wipe_data()
+    set_overview([]);
+  }
+  useEffect(() => {
+
+    navigation.getParent().setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={wipe_and_clear}><Text>123</Text></TouchableOpacity>
+      ),
+    });
+  }, [])
   useEffect(() => {
     const store = async () => {
+      if (Object.keys(overview_data).length !== 0) {
 
-      await store_data();
+        await store_data();
+      }
 
     }
-    store()
-  }, [overview_data]);
-  useEffect(() => {
+
     if (loaded === true) {
       stop_loading()
       data_to_components()
       set_loaded(false);
+
+      store()
     }
   }, [loaded])
   useEffect(() => {
@@ -134,12 +152,13 @@ const Overview = () => {
       const token = await authenticate()
       start_loading()
       set_refreshing(true);
-      await load_data()
+      load_data().then(async () => {
 
-      await get_overview(token, "2023-11-01", "00:00:00")
+        await get_overview(token, "2023-11-01", "00:00:00")
+      })
+
       set_refreshing(false);
 
-      await wipe_data()
     }
     if (refreshing === true) {
       refresh()
@@ -153,6 +172,7 @@ const Overview = () => {
         <RefreshControl refreshing={refreshing} onRefresh={() => set_refreshing(true)} />
       } className="flex flex-col px-4">
         {overview}
+        <View className="h-4" />
       </ScrollView >
       <LoadingScreen isVisible={is_loading} />
     </View>

@@ -3,12 +3,15 @@ import { View, Text } from 'react-native';
 import { TouchableOpacity, ScrollView } from "react-native-gesture-handler";
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { colorMapping } from "../screens/grades/subject_screen";
+import MessageContent from "../screens/messages/message_content";
 const attendance_colors = {
   "u": "#C9CC3F",
   "nb": "#9A2A2A",
   "sp": "#EADDCA",
   "zw": "#ECFFDC",
 }
+
+
 export const Attendance = ({ attendance }) => {
   const [show_modal, set_show_modal] = useState(false);
   return (
@@ -73,15 +76,18 @@ export const Grade = ({ grade }) => {
 export const Message = ({ message }) => {
   const [unread_color, set_unread_color] = useState(message.unread ? "#e3373d" : "#986cbb");
   return (
-    <TouchableOpacity className='bg-[#1f1f1f] rounded-lg mt-4 justify-between'>
-      <View className=''>
-        <Text className='self-end text-[#838383] pt-1 pr-1'>{message.date}</Text>
-        <Text numberOfLines={2} className='text-white text-lg text-left pl-5 pr-3 pb-2'>{message.title}</Text>
+    <View className='bg-[#1f1f1f] rounded-lg mt-4 justify-between'>
+      <View className="">
+        <View className=''>
+          <Text className='self-end text-[#838383] pt-1 pr-1'>{message.date}</Text>
+          <Text numberOfLines={2} className='text-white text-lg text-left pl-5 pr-3 pb-2'>{message.title}</Text>
+        </View>
+        <View className='pl-5 py-1 rounded-b-lg' style={{ backgroundColor: unread_color }}>
+          <Text>{message.author}</Text>
+        </View>
       </View>
-      <View className='pl-5 py-1 rounded-b-lg' style={{ backgroundColor: unread_color }}>
-        <Text>{message.author}</Text>
-      </View>
-    </TouchableOpacity>
+
+    </View>
   );
 }
 
