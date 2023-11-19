@@ -7,6 +7,7 @@ export const OverviewProvider = ({ children }) => {
   const [overview_data, set_overview_data] = useState({});
 
   const store_data = async () => {
+    console.log("Storing data of ")
     try {
       await AsyncStorage.setItem("overview", JSON.stringify(overview_data));
 
@@ -18,6 +19,7 @@ export const OverviewProvider = ({ children }) => {
   const wipe_data = async () => {
     try {
       await AsyncStorage.removeItem("overview");
+      set_overview_data({});
     } catch (error) {
       console.error('Error wiping data:', error);
     }
@@ -25,9 +27,11 @@ export const OverviewProvider = ({ children }) => {
   }
 
   const load_data = async () => {
+    console.log("RUNNING LOAD DATA")
     try {
       const value = await AsyncStorage.getItem("overview");
       if (JSON.parse(value) !== null) {
+        console.log("load data", value)
         set_overview_data(JSON.parse(value));
       }
     } catch (error) {
@@ -48,12 +52,7 @@ export const OverviewProvider = ({ children }) => {
     }
 
   };
-  useEffect(() => {
-    const load = async () => {
-      await load_data()
-    }
-    load()
-  }, []);
+
   return (
     <OverviewContext.Provider value={{ overview_data, add_overview_item, store_data, load_data, wipe_data }}>
       {children}

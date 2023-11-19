@@ -24,10 +24,10 @@ const LoginScreen = () => {
         login()
       })
       .catch(error => {
-        if (error.response.data !== undefined) {
+        if (error.response !== undefined) {
           set_error_message(error.response.data["error"])
         } else {
-          set_error_message(`Error connecting to api ${api_url}/login`)
+          set_error_message(`Error connecting to api ${api_url}login`)
         }
       });
   };
